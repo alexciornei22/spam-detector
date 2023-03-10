@@ -1,0 +1,27 @@
+{
+    "name": "spam_detector",
+    "deps": [
+        "gcc",
+        "python3",
+        "valgrind"
+    ],
+    "tasks": [
+        {
+            "name": "spam_detector",
+            "points": 100,
+            "tests": 2,
+            "points_distribution": {
+                "0": 50,
+                "1": 50
+            },
+            "timeout": 60,
+            "stdin": false,
+            "stdout": false,
+            "valgrind": true
+        }
+
+    ],
+    "coding_style": 20,
+    "penalty_warnings": 5,
+    "penalty_readme": 5
+}

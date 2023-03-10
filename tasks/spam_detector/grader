@@ -1,0 +1,101 @@
+#!/usr/bin/python3
+# Copyright 2019 Darius Neatu (neatudarius@gmail.com)
+
+import inspect
+import pathlib
+import os
+import sys
+from sklearn.metrics import f1_score
+from shutil import copyfile
+
+current_dir = os.path.dirname(os.path.abspath(
+    inspect.getfile(inspect.currentframe())))
+root_dir = pathlib.Path(current_dir).parent.parent
+sys.path.insert(0, str(root_dir))
+
+from check_utils.grader import Grader
+
+
+class SpamDetector(Grader):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def grade_test(self):
+        if self.env_path == '00-spam_detector':
+            try:
+                copyfile("statistics.out", self.output_path)
+            except:
+                self.exit(code=-1, err="statistics.out does not exit")
+            os.system("rm -f statistics.out")
+        elif self.env_path == '01-spam_detector':
+            try:
+                copyfile("prediction.out", self.output_path)
+            except:
+                self.exit(code=-1, err="prediction.out does not exit")
+            os.system("rm -f prediction.out")
+
+        else:
+            self.exit(code=-2, err="not a valid test")
+
+
+        _, output, ref = self.read()
+        if self.env_path == '00-spam_detector':
+            try:
+                if len(output) != len(ref):
+                    self.exit(code=-1, err=f"wrong number of lines in statistics.out (#lines = {len(output)} - expected #keywords = {len(ref)})")
+
+                output = [x.strip() for x in output]
+            except:
+                output = []
+            ref = [x.strip() for x in ref]
+            outputDict = {}
+            for line in output:
+                word, count_w, stdev = line.split()
+                if word in outputDict:
+                    self.exit(code=-1, err=f"duplicate keyword {word}")
+
+                outputDict[word] = {
+                    'counter' : count_w,
+                    'stdev' : float(stdev),
+                }
+
+            correctCounter = 0
+            correctStdev = 0
+            for line in ref:
+                word, count_w, stdev = line.split()
+                stdev = float(stdev)
+                if word in outputDict:
+                    if (outputDict[word]['counter'] == count_w):
+                        correctCounter += 1
+                    if (abs(outputDict[word]['stdev'] - stdev) <= 1e-02):
+                        correctStdev += 1
+                else:
+                    self.exit(code=-1, err=f"keyword '{word}' is missing. please print stats for all entries in 'keywords' file.")
+
+            points = (correctCounter + correctStdev) / (2 * len(ref)) * self.max_points
+            self.add_points(points)
+            self.exit(code=0, err=f"correct counters = {correctCounter} / {len(ref)}, correct stdevs = {correctStdev} / {len(ref)}, #keywords = {len(ref)}")
+
+        elif self.env_path == '01-spam_detector':
+            try:
+                output = [int(x.strip()) for x in output]
+            except:
+                output = []
+            ref = [int(x.strip()) for x in ref]
+
+            F1 = f1_score(ref, output, average='binary')
+            points = min(max(2 * (F1 * 100 - self.max_points), 0), self.max_points)
+            self.add_points(points)
+
+
+            if not 'ONLINE_JUDGE' in os.environ:
+                self.exit(code=0, err=f"F1={F1}", out=F1)
+            else:
+                self.exit(code=0, out=F1)
+
+
+
+
+if __name__ == '__main__':
+    assert len(sys.argv) == 6, sys.argv
+    SpamDetector(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5]).run()

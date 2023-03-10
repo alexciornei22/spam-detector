@@ -1,0 +1,26 @@
+    In fisierul keywords.c sunt definitiile functiilor care rezolva
+problemele de la task-ul 1 (detectarea cuvintelor cheie si a datelor
+aferente fiecaruia).
+    In fisierul spam_detector.c se afla functia main si functiile
+care rezolva task-ul 2.
+    In utils.h sunt incluse header-ele folosite in rezolvarea
+problemei si sunt definite 3 structuri care sa ajute cu memorarea
+datelor folosite in implementare (cuvintele cheie, criteriile
+pe baza carora se calculeaza scorul email-urilor, adresele si
+scorul fiecarui spammer).
+    A fost adaugat si un fisier additional_keywords care contine
+alte cuvinte care apar frecvent in mail-uri spam.
+
+Schimbari la formula:
+    Pragul a fost schimbat de la 35 la 50;
+    Scorul keywords se inmulteste cu 5 nu cu 10,
+iar cel uppercase cu 60;
+    Daca un email contine cuvantul "Re:" se scade 40 din scor,
+am observat ca putine email-uri spam sunt reply-uri.
+    Daca un email contine "ADV:" (advert) este reclama si se
+aduna 100 la scor;
+    In fisierul additional_keywords a fost adaugat si un indicator
+de blacklist fiecarui cuvant, unele cuvinte indica un risc
+foarte mare ca mail-lul respectiv sa fie spam si se adauga 100;
+    In formula scorului keywords se inmulteste si deviatia
+standard a fiecarui keyword identificat;
